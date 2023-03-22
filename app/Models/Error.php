@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Error extends Model
 {
     use HasFactory;
-    
+    protected $connection = 'error_mysql';
     protected $table = 'errors';
 
     protected $fillable = [
