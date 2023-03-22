@@ -52,9 +52,9 @@ trait ListingApiTrait
 
         /* Pagination */
         $count          = $query->count();
-        if (request()->page && request()->perPage) {
+        if (request()->page || request()->perPage) {
             $page       = request()->page;
-            $perPage    = request()->perPage;
+            $perPage    = request()->perPage ?? 10;
             $query      = $query->skip($perPage * ($page - 1))->take($perPage);
         }
         return ['query' => $query, 'count' => $count];
