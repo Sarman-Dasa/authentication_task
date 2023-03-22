@@ -1,0 +1,139 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Employee;
+use App\Traits\ListingApiTrait;
+use Illuminate\Http\Request;
+
+class EmployeeController extends Controller
+{
+    use ListingApiTrait;
+    /**
+     * Display a listing of the Employees.
+     *
+     * @return json response
+     */
+    public function list(Request $request)
+    {
+        $this->ListingValidation();
+
+        $query = Employee::query();
+        $searchable_fields = ['first_name','last_name','email','email','phone','joining_date'];
+        
+        $data = $this->filterSearchPagination($query,$searchable_fields);
+
+        return ok('Data',[
+            'Employee List' =>  $data['query']->get(),
+            'No Of Employee'=>  $data['count'],    
+        ]);
+    }
+
+    /**
+     * Store a newly created Employee in Database.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function create(Request $request)
+    {
+        $request->validate([
+            'first_name'        =>  'required|string|min:3|max:30',
+            'last_name'         =>  'required|string|min:3|max:30',
+            'email'             =>  'required|email|unique:employees,email',
+            'phone'             =>  'required|unique:employees,phone',
+            'joining_date'      =>  'required|date_format:Y-m-d|before_or_equal:'.now(),
+            'company_id'        =>  'required|exists:companies,id',
+        ],[
+            'company_id.exists' =>  'Company does not found!!!',
+        ]);
+
+        $employee = Employee::create($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id']));
+
+        return ok('Employee Data Added Successfully');
+    }
+
+    /**
+     * Update the specified Employee in Database.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return json Response
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'first_name'        =>  'required|string|min:3|max:30',
+            'last_name'         =>  'required|string|min:3|max:30',
+            'email'             =>  'required|email|unique:employees,email,'.$id.',id',
+            'phone'             =>  'required|unique:employees,phone,'.$id.',id',
+            'joining_date'      =>  'required|date_format:Y-m-d|before_or_equal:'.now(),
+            'company_id'        =>  'required|exists:companies,id',
+        ],[
+            'company_id.exists' =>  'Company does not found!!!',
+        ]);
+
+        $employee = Employee::findOrFail($id); 
+        $employee->update($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id']));
+
+        return ok('Employee Data Updated Successfully');
+    }
+
+    /**
+     * Display the specified Employee.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function get($id)
+    {
+        $employee = Employee::with('company','tasks')->withCount('tasks AS NO-OF-TASK')->findOrFail($id);
+
+        return ok('Employee Data',$employee);
+    }
+
+    /**
+     * soft Remove the specified Employee from Database.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $employee = Employee::findOrFail($id);
+        $employee->delete();
+
+        return ok('Employee Data Deleted Successfully');
+    }
+
+    /**
+     * force Remove the specified Employee from Database.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function forceDelete($id)
+    {
+        $employee = Employee::onlyTrashed()->findOrFail($id);
+        $employee->forceDelete();
+
+        return ok('Employee Data Permanent Deleted Successfully');
+    }
+
+     /**
+     * Restore Removed the specified Employee from Database.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function restoreDeletedEmployee($id)
+    {
+        $employee = Employee::onlyTrashed()->findOrFail($id);
+        $employee->restore();
+
+        return ok('Employee Data Restore  Successfully');
+    }
+
+
+
+}
