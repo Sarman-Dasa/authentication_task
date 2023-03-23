@@ -38,15 +38,17 @@ class Company extends Model
      */
     public function jobs()
     {
-        return $this->hasMany(Job::class,'company_id','id');
+        return $this->hasMany(Job::class,'company_id','id')->with('candidates');
     }
 
     /**
-     * hasoneth
+     * one-to-many
      * Company-Task Relation
      */
      public function tasks()
      {
         return $this->hasManyThrough(Task::class,Employee::class,'company_id','employee_id');
      }
+
+
 }
