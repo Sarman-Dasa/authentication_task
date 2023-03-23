@@ -11,7 +11,7 @@ class Company extends Model
     use HasFactory;
     use SoftDeletes;
     
-    protected $fillable = ['name' ,'email' ,'website' ,'logo'];
+    protected $fillable = ['name' ,'email' ,'website' ,'logo' ,'user_id'];
 
     /**
      * The attributes that should be hidden for serialization.
