@@ -145,9 +145,13 @@ class EmployeeController extends Controller
         return ok('Employee Data Restore  Successfully');
     }
 
-    public function export() 
+    public function export(Request $request) 
     {
-        return Excel::download(new ExportEmployee, 'employee.csv');
+        return Excel::download(new ExportEmployee($request->start_date,$request->end_date), 'employee.csv');
+        // $data = (new ExportEmployee($request->start_date,$request->end_date))->download('employee.csv',Excel::CSV);
+         //return ($data);
+        // return (new InvoicesExport(2018))->download('invoices.xlsx');
+
     }
     
     public function import(Request $request)
