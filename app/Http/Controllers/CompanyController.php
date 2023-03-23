@@ -70,10 +70,11 @@ class CompanyController extends Controller
             $logo->move(public_path(). '/storage/logo/',$logoName);
             $logoPath = '/storage/logo/'.$logoName;
         }
-
+        $userId = auth()->user()->id;
         $company->update($request->only(['name' ,'email' ,'website'])
         +[
-            'logo'  =>  $logoPath,
+            'logo'      =>  $logoPath,
+            'user_id'   =>  $userId,
         ]);
 
         return ok('Company Data Updated Successfully');
