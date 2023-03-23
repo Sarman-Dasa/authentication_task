@@ -63,7 +63,7 @@ Route::middleware(['auth:api'])->group(function () {
             Route::delete('delete/{id}', 'destroy');
             Route::delete('force-delete/{id}', 'forceDelete');
             Route::get('restore-deleted-employee/{id}', 'restoreDeletedEmployee');
-            Route::get('export','export');
+            Route::post('export','export');
             Route::post('import','import');
         });
 
@@ -97,11 +97,9 @@ Route::middleware(['auth:api'])->group(function () {
         Route::controller(CandidateController::class)->prefix('candidate')->group(function(){
             Route::post('list', 'list');
             Route::post('create', 'create')->withoutMiddleware(['auth:api','admin']);
+            Route::post('change-position/{id}', 'changePosition');
             Route::get('get/{id}', 'get');
+            Route::delete('delete/{id}', 'destroy');
         });
     });
 });
-
-// Route::controller(CandidateController::class)->prefix('candidate')->group(function(){
-//     Route::post('create', 'create');
-// });
