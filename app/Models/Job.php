@@ -23,4 +23,21 @@ class Job extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    /**
+     * One-To-Many 
+     * Job-Candidated Relation
+     */
+    public function candidates()
+    {
+        return $this->hasMany(Candidate::class,'job_id','id');
+    }
+
+    /**
+     * Job-Company Relation
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class,'company_id','id');
+    }
 }
