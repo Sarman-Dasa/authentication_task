@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Candidate;
+use App\Models\Employee;
 use App\Traits\ListingApiTrait;
 use Illuminate\Http\Request;
 
@@ -70,9 +71,18 @@ class CandidateController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function changePosition($id)
     {
-        //
+        $candidate = Candidate::with('job')->findOrFail($id);
+        //return ok('',$candidate->job->company_id);
+        $employee = Employee::create($candidate->only(['first_name' , 'last_name' ,'email' ,'phone'])
+        +[
+            'joining_date'  =>  now()->addDays(2),
+            'company_id'    =>  $candidate->job->company_id,
+        ]);
+
+        return ok('You are Selected');
+
     }
 
      /**
@@ -83,7 +93,7 @@ class CandidateController extends Controller
      */
     public function get($id)
     {
-        $candidate = Candidate::findOrFail($id);
+        $candidate = Candidate::with('job')->findOrFail($id);
         return ok('candidate data' ,$candidate);
     }
 
@@ -95,6 +105,13 @@ class CandidateController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $candidate = Candidate::with('job')->findOrFail($id);
+        $userId  = $candidate->job->company->user_id;
+        if($userId == auth()->user()->id){
+            $candidate->delete();
+            return ok('Candidated Deleted.');
+        }
+        else
+            return ok('No Record Found!!!');
     }
 }
