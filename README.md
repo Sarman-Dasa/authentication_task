@@ -64,3 +64,16 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## passport command
+composer require laravel/passport
+php artisan migrate
+php artisan passport:install
+
+
+## Import Export Excel and CSV File command
+    composer require maatwebsite/excel
+    php artisan vendor:publish --provider="Maatwebsite\Excel\ExcelServiceProvider" --tag=config
+    php artisan make:export ExportEmployee --model=Employee
+    php artisan make:import ImportEmployee --model=Employee
+
