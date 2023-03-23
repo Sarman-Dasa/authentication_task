@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\auth\AuthController;
+use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\JobController;
@@ -62,6 +63,8 @@ Route::middleware(['auth:api'])->group(function () {
             Route::delete('delete/{id}', 'destroy');
             Route::delete('force-delete/{id}', 'forceDelete');
             Route::get('restore-deleted-employee/{id}', 'restoreDeletedEmployee');
+            Route::get('export','export');
+            Route::post('import','import');
         });
 
         /**
@@ -90,5 +93,15 @@ Route::middleware(['auth:api'])->group(function () {
             Route::delete('force-delete/{id}', 'forceDelete');
             Route::get('restore-deleted-employee/{id}', 'restoreDeletedJob');
         });
+
+        Route::controller(CandidateController::class)->prefix('candidate')->group(function(){
+            Route::post('list', 'list');
+            Route::post('create', 'create')->withoutMiddleware(['auth:api','admin']);
+            Route::get('get/{id}', 'get');
+        });
     });
 });
+
+// Route::controller(CandidateController::class)->prefix('candidate')->group(function(){
+//     Route::post('create', 'create');
+// });
