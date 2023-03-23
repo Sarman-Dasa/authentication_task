@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportEmployee;
+use App\Imports\EmployeesImport;
+use App\Models\Company;
 use App\Models\Employee;
 use App\Traits\ListingApiTrait;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
 {
@@ -48,9 +52,16 @@ class EmployeeController extends Controller
             'company_id.exists' =>  'Company does not found!!!',
         ]);
 
-        $employee = Employee::create($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id']));
+        $company = Company::where('id',$request->company_id)->first();
+        //dd($company);
+        if(auth()->user()->id == $company->user_id)
+        {
+            $employee = Employee::create($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id']));
+            return ok('Employee Data Added Successfully');
+        }
 
-        return ok('Employee Data Added Successfully');
+        return error('unauthenticated',type:'unauthenticated');
+       
     }
 
     /**
@@ -134,6 +145,14 @@ class EmployeeController extends Controller
         return ok('Employee Data Restore  Successfully');
     }
 
-
+    public function export() 
+    {
+        return Excel::download(new ExportEmployee, 'employee.csv');
+    }
+    
+    public function import(Request $request)
+    {
+        Excel::import(new EmployeesImport,$request->file('file'));
+    }
 
 }
