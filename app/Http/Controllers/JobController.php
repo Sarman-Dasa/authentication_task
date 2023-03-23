@@ -77,7 +77,7 @@ class JobController extends Controller
      */
     public function get($id)
     {
-        $job = Job::findOrFail($id);
+        $job = Job::with('candidates','company')->findOrFail($id);
         return ok('Job Data',$job);
     }
 
