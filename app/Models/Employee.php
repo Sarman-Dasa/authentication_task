@@ -11,7 +11,7 @@ class Employee extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id'];
+    protected $fillable = ['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id' ,'user_id'];
 
      /**
      * The attributes that should be hidden for serialization.
