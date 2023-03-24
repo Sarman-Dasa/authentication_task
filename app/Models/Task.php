@@ -11,7 +11,7 @@ class Task extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['title' ,'description' ,'employee_id'];
+    protected $fillable = ['title' ,'description' ,'employee_id' ,'status'];
 
      /**
      * The attributes that should be hidden for serialization.
@@ -29,7 +29,7 @@ class Task extends Model
      */
     public function employee()
     {
-        return $this->belongsTo(Employee::class,'employee_id','id');
+        return $this->belongsTo(Employee::class,'employee_id','id')->with('company');
     }
 
     public function company()
