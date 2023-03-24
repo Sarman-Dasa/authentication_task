@@ -36,7 +36,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('logout', 'logout');
         Route::post('change-password', 'changePassword');
     });
-    Route::middleware(['admin'])->group(function () {
+    Route::middleware(['admin', 'employee'])->group(function () {
 
         /**
          * Company Module Crud 
@@ -54,23 +54,20 @@ Route::middleware(['auth:api'])->group(function () {
         /**
          * Employee Module Crud
          */
-        Route::controller(EmployeeController::class)->prefix('employee')->group(function()
-        {
+        Route::controller(EmployeeController::class)->prefix('employee')->group(function () {
             Route::post('list', 'list');
             Route::post('create', 'create');
-            Route::post('update/{id}', 'update');
-            Route::get('get/{id}', 'get');
             Route::delete('delete/{id}', 'destroy');
             Route::delete('force-delete/{id}', 'forceDelete');
             Route::get('restore-deleted-employee/{id}', 'restoreDeletedEmployee');
-            Route::post('export','export');
-            Route::post('import','import');
+            Route::post('export', 'export');
+            Route::post('import', 'import');
         });
 
         /**
          * Employee Task Module Crud
          */
-        Route::controller(TaskController::class)->prefix('task')->group(function(){
+        Route::controller(TaskController::class)->prefix('task')->group(function () {
             Route::post('list', 'list');
             Route::post('create', 'create');
             Route::post('update/{id}', 'update');
@@ -83,8 +80,7 @@ Route::middleware(['auth:api'])->group(function () {
         /**
          * Job Module Crud
          */
-        Route::controller(JobController::class)->prefix('job')->group(function()
-        {
+        Route::controller(JobController::class)->prefix('job')->group(function () {
             Route::post('list', 'list');
             Route::post('create', 'create');
             Route::post('update/{id}', 'update');
@@ -94,12 +90,20 @@ Route::middleware(['auth:api'])->group(function () {
             Route::get('restore-deleted-employee/{id}', 'restoreDeletedJob');
         });
 
-        Route::controller(CandidateController::class)->prefix('candidate')->group(function(){
+        Route::controller(CandidateController::class)->prefix('candidate')->group(function () {
             Route::post('list', 'list');
-            Route::post('create', 'create')->withoutMiddleware(['auth:api','admin']);
-            Route::post('change-position/{id}', 'changePosition');
+            Route::post('create', 'create')->withoutMiddleware(['auth:api', 'admin']);
+            Route::post('change-position/{id}', 'update');
             Route::get('get/{id}', 'get');
             Route::delete('delete/{id}', 'destroy');
         });
+    });
+
+    /**
+     * Employee Task Module Crud
+     */
+    Route::controller(TaskController::class)->middleware(['employee'])->prefix('task')->group(function () {
+        Route::post('update/{id}', 'update');
+        Route::get('get/{id}', 'get');
     });
 });
