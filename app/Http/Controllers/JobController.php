@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Job;
 use App\Traits\ListingApiTrait;
 use Illuminate\Http\Request;
@@ -43,9 +44,14 @@ class JobController extends Controller
             'company_id'=>  'required|exists:companies,id',
         ]);
 
-        $job = Job::create($request->only(['type' ,'vacancy' ,'company_id']));
-
-        return ok('Job Data Added Successfully');
+        $company = Company::where('id',$request->company_id)->first();
+        // dd($company);
+        if(auth()->user()->id == $company->user_id){
+            $job = Job::create($request->only(['type' ,'vacancy' ,'company_id']));
+            return ok('Job Data Added Successfully');
+        }
+        
+        return ok('Company Does Not Exists');
     }
 
     /**
