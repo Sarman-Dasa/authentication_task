@@ -94,6 +94,12 @@ class CandidateController extends Controller
     public function get($id)
     {
         $candidate = Candidate::with('job')->findOrFail($id);
+        // $candidate = Candidate::select('candidates.*','jobs.*','companies.*')
+        // ->join('jobs','jobs.id','=','candidates.job_id')
+        // ->join('companies','companies.id','=','jobs.company_id')
+        // ->where('candidates.id',$id)
+        // ->where('companies.user_id',auth()->user()->id)->get();
+
         return ok('candidate data' ,$candidate);
     }
 
