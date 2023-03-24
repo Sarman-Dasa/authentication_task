@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Candidate;
 use App\Models\Employee;
+use App\Models\User;
 use App\Traits\ListingApiTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Offset;
 
 class CandidateController extends Controller
 {
@@ -21,13 +24,13 @@ class CandidateController extends Controller
 
         $query = Candidate::query();
 
-        $searchable_fields = ['first_name' ,'last_name' ,'phone' ,'email'];
+        $searchable_fields = ['first_name', 'last_name', 'phone', 'email'];
 
-        $data = $this->filterSearchPagination($query ,$searchable_fields);
+        $data = $this->filterSearchPagination($query, $searchable_fields);
 
-        return ok('Data',[
+        return ok('Data', [
             'Candidate List' => $data['query']->get(),
-            'No Of Candidate'=> $data['count'],
+            'No Of Candidate' => $data['count'],
         ]);
     }
 
@@ -46,20 +49,20 @@ class CandidateController extends Controller
             'phone'             =>  'required|unique:candidates,phone',
             'resume'            =>  'required|mimes:pdf',
             'job_id'            =>  'required|exists:jobs,id'
-        ],[
+        ], [
             'job_id.exists' =>  'job does not found!!!',
         ]);
 
         $resume = $request->file('resume');
-        
+
         $resumeName = $resume->getClientOriginalName();
-    
-        $resume->move(public_path(). '/storage/resumes/' ,$resumeName);
-        
-        $candidate = Candidate::create($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'job_id'])
-        +[
-            'resume'    =>   '/storage/resumes/'.$resumeName,
-        ]);
+
+        $resume->move(public_path() . '/storage/resumes/', $resumeName);
+
+        $candidate = Candidate::create($request->only(['first_name', 'last_name', 'email', 'phone', 'job_id'])
+            + [
+                'resume'    =>   '/storage/resumes/' . $resumeName,
+            ]);
 
         return ok('Your Details Submited Successfully');
     }
@@ -71,21 +74,42 @@ class CandidateController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function changePosition($id)
+    public function update(Request $request, $id)
     {
-        $candidate = Candidate::with('job')->findOrFail($id);
-        //return ok('',$candidate->job->company_id);
-        $employee = Employee::create($candidate->only(['first_name' , 'last_name' ,'email' ,'phone'])
-        +[
-            'joining_date'  =>  now()->addDays(2),
-            'company_id'    =>  $candidate->job->company_id,
+        $request->validate([
+            'status' => 'required|in:Accept,Reject',
         ]);
 
-        return ok('You are Selected');
+        $candidate = Candidate::with('job')->findOrFail($id);
+        
+        if ($request->status == 'Accept') 
+        {
+            $username = strtolower($candidate->first_name . $candidate->last_name[0]);
+            $companyName =   $candidate->job->company->name;
+            $email = $username . '@' . explode(" ", $companyName)[0] . '.com';
+            $user  = User::create([
+                'name'              =>  $username,
+                'email'             =>  $email,
+                'role'              =>  'Employee',
+                'email_verified_at' =>  now(),
+                'is_active'         =>  true,
+                'password'          =>  Hash::make($username),
+            ]);
 
+            //return ok('',$candidate->job->company_id);
+            $employee = Employee::create($candidate->only(['first_name', 'last_name', 'email', 'phone'])
+                + [
+                    'joining_date'  =>  now()->addDays(2),
+                    'company_id'    =>  $candidate->job->company_id,
+                    'user_id'       =>  $user->id,
+                    'role'          =>  'Employee',
+                ]);
+                return ok('You are Selected');
+        }
+        $candidate->update($request->only('status'));
     }
 
-     /**
+    /**
      * Display the specified candidate.
      *
      * @param  int  $id
@@ -100,7 +124,7 @@ class CandidateController extends Controller
         // ->where('candidates.id',$id)
         // ->where('companies.user_id',auth()->user()->id)->get();
 
-        return ok('candidate data' ,$candidate);
+        return ok('candidate data', $candidate);
     }
 
     /**
@@ -113,11 +137,10 @@ class CandidateController extends Controller
     {
         $candidate = Candidate::with('job')->findOrFail($id);
         $userId  = $candidate->job->company->user_id;
-        if($userId == auth()->user()->id){
+        if ($userId == auth()->user()->id) {
             $candidate->delete();
             return ok('Candidated Deleted.');
-        }
-        else
+        } else
             return ok('No Record Found!!!');
     }
 }
