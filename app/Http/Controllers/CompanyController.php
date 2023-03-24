@@ -17,7 +17,7 @@ class CompanyController extends Controller
 
         $query = Company::query();
         $searchable_fields = ['name','email'];
-        
+        $query->where('user_id','=',auth()->user()->id);
         $data = $this->filterSearchPagination($query,$searchable_fields);
 
         return ok('Company Data',[
@@ -59,7 +59,7 @@ class CompanyController extends Controller
             'website'   =>  'required|url|min:15|max:150',
         ]);
 
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id',auth()->user()->id)->findOrFail($id);
         $logoPath = $company->logo;
         if($request->hasFile('logo'))
         {
@@ -100,7 +100,7 @@ class CompanyController extends Controller
 
     public function forceDelete($id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::onlyTrashed()->findOrFail($id);
         $company->forceDelete();
 
         return ok('Company Data Permanent Deleted Successfully');
