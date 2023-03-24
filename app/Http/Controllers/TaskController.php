@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\Employee;
 use App\Models\Task;
 use App\Traits\ListingApiTrait;
 use GuzzleHttp\Psr7\Query;
@@ -62,15 +63,28 @@ class TaskController extends Controller
      */
     public function update(Request $request, $id)
     {
+
+        $task = Task::with('employee')->findOrFail($id);
+        if(auth()->user()->role == 'Admin')
+        {
+            $request->validate([
+                'title'         =>  'required|string|min:8|max:100',
+                'description'   =>  'required|min:10|max:150',
+                'employee_id'   =>  'required|numeric|exists:employees,id',
+            ]);
+            $task->update($request->only(['title' ,'description' ,'employee_id']));
+        }
+        
         $request->validate([
-            'title'         =>  'required|string|min:8|max:100',
-            'description'   =>  'required|min:10|max:150',
-            'employee_id'   =>  'required|numeric|exists:employees,id',
+            'status'    =>  'in:Completed,Pending,Inprogress',
         ]);
-
-        $task = Task::findOrFail($id);
-        $task->update($request->only(['title' ,'description' ,'employee_id']));
-
+        
+        if($task->employee->user_id == auth()->user()->id){
+            $task->update($request->only('status'));
+        }
+        else{
+            return ok('Does not have any task.');
+        }
         return ok('Task Updated Successfully');
     }
 
@@ -82,8 +96,15 @@ class TaskController extends Controller
      */
     public function get($id)
     {
-        $task = Task::with('employee','company')->findOrFail($id);
-        return ok('Task Data',$task);
+        $task = Task::with('employee')->findOrFail($id);
+        
+        if($task->employee->user_id == auth()->user()->id || auth()->user()->role == "Admin"){
+            return ok('Task Data',$task);
+        }
+        else{
+            return ok('Does not have any task.');
+        }
+       
     }
 
     /**
