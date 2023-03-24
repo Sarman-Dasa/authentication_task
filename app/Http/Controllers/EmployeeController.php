@@ -6,8 +6,10 @@ use App\Exports\ExportEmployee;
 use App\Imports\EmployeesImport;
 use App\Models\Company;
 use App\Models\Employee;
+use App\Models\User;
 use App\Traits\ListingApiTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
@@ -56,9 +58,25 @@ class EmployeeController extends Controller
         //dd($company);
         if(auth()->user()->id == $company->user_id)
         {
-            $employee = Employee::create($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id']));
+            $username = strtolower($request->first_name . $request->last_name[0]);
+            $email = $username .'@'. explode(" " ,$company->name)[0] .'.com';
+            $user  = User::create([
+                'name'              =>  $username,
+                'email'             =>  $email,
+                'role'              =>  'Employee',
+                'email_verified_at' =>  now(),
+                'is_active'         =>  true,
+                'password'          =>  Hash::make($username),
+            ]);
+
+            $employee = Employee::create($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id'])
+            +[
+                'user_id'   =>  $user->id,
+            ]);
+           
             return ok('Employee Data Added Successfully');
         }
+
 
         return error('unauthenticated',type:'unauthenticated');
        
