@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Candidate;
 use App\Models\Employee;
 use App\Models\User;
+use App\Notifications\JobConfirmationMail;
+use App\Notifications\WelcomeMail;
 use App\Traits\ListingApiTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\Offset;
 
 class CandidateController extends Controller
 {
@@ -82,12 +83,16 @@ class CandidateController extends Controller
 
         $candidate = Candidate::with('job')->findOrFail($id);
         
-        if ($request->status == 'Accept') 
+        if ($candidate->status != "Accept" && $request->status == 'Accept') 
         {
-            $username = strtolower($candidate->first_name . $candidate->last_name[0]);
-            $companyName =   $candidate->job->company->name;
+            $username       = strtolower($candidate->first_name . $candidate->last_name[0]);
+            $companyName    =   $candidate->job->company->name;
+            $jobType        = $candidate->job->type;
+
             $email = $username . '@' . explode(" ", $companyName)[0] . '.com';
+            
             $user  = User::create([
+
                 'name'              =>  $username,
                 'email'             =>  $email,
                 'role'              =>  'Employee',
@@ -96,15 +101,20 @@ class CandidateController extends Controller
                 'password'          =>  Hash::make($username),
             ]);
 
-            //return ok('',$candidate->job->company_id);
             $employee = Employee::create($candidate->only(['first_name', 'last_name', 'email', 'phone'])
-                + [
-                    'joining_date'  =>  now()->addDays(2),
-                    'company_id'    =>  $candidate->job->company_id,
-                    'user_id'       =>  $user->id,
-                    'role'          =>  'Employee',
-                ]);
-                return ok('You are selected');
+            +[
+                'joining_date'  =>  now()->addDays(2),
+                'company_id'    =>  $candidate->job->company_id,
+                'user_id'       =>  $user->id,
+                'role'          =>  'Employee',
+            ]);
+
+            $employee['company_name']   =  $companyName;
+            $employee['job_type']       =  $jobType;
+            $employee->notify(new JobConfirmationMail($employee));
+        }
+        else{
+            return ok('Candidated Already seleted');
         }
         $candidate->update($request->only('status'));
     }
