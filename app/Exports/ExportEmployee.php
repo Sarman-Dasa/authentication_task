@@ -25,7 +25,7 @@ class ExportEmployee implements FromCollection , WithHeadings
 
     public function headings() :array
     {
-        return ['ID','First Name' , 'Last Name' ,'Email' ,'Phone' ,'Joining Date' ,'Company Id'];
+        return ['ID','first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id', 'user_id'];
     }
 
 
