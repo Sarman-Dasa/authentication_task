@@ -77,3 +77,5 @@ php artisan passport:install
     php artisan make:export ExportEmployee --model=Employee
     php artisan make:import ImportEmployee --model=Employee
 
+## Customizing default Notification template
+php artisan vendor:publish --tag=laravel-notifications
