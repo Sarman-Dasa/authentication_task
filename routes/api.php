@@ -29,7 +29,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('reset-password', 'resetPassword');
 });
 
-Route::middleware(['auth:api'])->group(function () {
+Route::middleware(['auth:api','throttle:1|30'])->group(function () {
     Route::controller(UserController::class)->group(function () {
         Route::post('list', 'list');
         Route::get('get/{id}', 'get');
