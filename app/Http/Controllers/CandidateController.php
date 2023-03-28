@@ -112,11 +112,13 @@ class CandidateController extends Controller
             $employee['company_name']   =  $companyName;
             $employee['job_type']       =  $jobType;
             $employee->notify(new JobConfirmationMail($employee));
+            return ok('Mail send successfully.');
         }
         else{
             return ok('Candidated Already seleted');
         }
         $candidate->update($request->only('status'));
+
     }
 
     /**
