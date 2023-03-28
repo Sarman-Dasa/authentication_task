@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use App\Models\Error;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
@@ -27,8 +28,9 @@ class Handler extends ExceptionHandler
      * @var array<int, class-string<\Throwable>>
      */
     protected $dontReport = [
-        // AuthorizationException::class,
-        // HttpException::class,
+        AuthorizationException::class,
+        HttpException::class,
+        NotFoundHttpException::class,
     ];
 
     /**
@@ -51,7 +53,7 @@ class Handler extends ExceptionHandler
     {
         $this->renderable(function (Throwable $exception, $request) {
 
-            $user_id = 1;
+            $user_id = 0;
 
             if (Auth::user()) {
                 $user_id = Auth::user()->id;
@@ -80,6 +82,10 @@ class Handler extends ExceptionHandler
             else if($exception instanceof NotFoundHttpException)
             {
                 return error(type:'notfound');
+            }
+
+            else if ($exception instanceof ThrottleRequestsException) {
+                return error('Too Many Attempts');
             }
         });
     }
