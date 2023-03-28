@@ -29,8 +29,8 @@ class CandidateController extends Controller
         $data = $this->filterSearchPagination($query, $searchable_fields);
 
         return ok('Data', [
-            'Candidate List' => $data['query']->get(),
-            'No Of Candidate' => $data['count'],
+            'candidates'    => $data['query']->get(),
+            'count'         => $data['count'],
         ]);
     }
 
@@ -64,7 +64,7 @@ class CandidateController extends Controller
                 'resume'    =>   '/storage/resumes/' . $resumeName,
             ]);
 
-        return ok('Your Details Submited Successfully');
+        return ok('Your details submited successfully');
     }
 
     /**
@@ -104,7 +104,7 @@ class CandidateController extends Controller
                     'user_id'       =>  $user->id,
                     'role'          =>  'Employee',
                 ]);
-                return ok('You are Selected');
+                return ok('You are selected');
         }
         $candidate->update($request->only('status'));
     }
@@ -137,10 +137,13 @@ class CandidateController extends Controller
     {
         $candidate = Candidate::with('job')->findOrFail($id);
         $userId  = $candidate->job->company->user_id;
-        if ($userId == auth()->user()->id) {
+
+        if ($userId == auth()->user()->id) 
+        {
             $candidate->delete();
-            return ok('Candidated Deleted.');
-        } else
-            return ok('No Record Found!!!');
+            return ok('Candidated data deleted.');
+        } 
+        else
+            return ok('No record found!!!');
     }
 }
