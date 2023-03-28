@@ -30,8 +30,8 @@ class TaskController extends Controller
         $data = $this->filterSearchPagination($query,$searchable_fields);
 
         return ok('Data',[
-            'Task List'  => $data['query']->get(),
-            'No Of Task'=> $data['count'],
+            'tasks' => $data['query']->get(),
+            'count' => $data['count'],
         ]);
     }
 
@@ -51,7 +51,7 @@ class TaskController extends Controller
 
         $task = Task::create($request->only(['title' ,'description' ,'employee_id']));
 
-        return ok('Task Added Successfully');
+        return ok('Task added successfully');
     }
 
     /**
@@ -65,6 +65,7 @@ class TaskController extends Controller
     {
 
         $task = Task::with('employee')->findOrFail($id);
+        $message = 'Task updated successfully';
         if(auth()->user()->role == 'Admin')
         {
             $request->validate([
@@ -73,10 +74,11 @@ class TaskController extends Controller
                 'employee_id'   =>  'required|numeric|exists:employees,id',
             ]);
             $task->update($request->only(['title' ,'description' ,'employee_id']));
+            return ok($message);
         }
         
         $request->validate([
-            'status'    =>  'in:Completed,Pending,Inprogress',
+            'status'    =>  'required|in:Completed,Pending,Inprogress',
         ]);
         
         if($task->employee->user_id == auth()->user()->id){
@@ -85,7 +87,7 @@ class TaskController extends Controller
         else{
             return ok('Does not have any task.');
         }
-        return ok('Task Updated Successfully');
+        return ok($message);
     }
 
      /**
@@ -98,8 +100,9 @@ class TaskController extends Controller
     {
         $task = Task::with('employee')->findOrFail($id);
         
-        if($task->employee->user_id == auth()->user()->id || auth()->user()->role == "Admin"){
-            return ok('Task Data',$task);
+        $user =  auth()->user();
+        if($task->employee->user_id == $user->id || $user->role == "Admin"){
+            return ok('Task data',$task);
         }
         else{
             return ok('Does not have any task.');
@@ -118,7 +121,7 @@ class TaskController extends Controller
         $task = Task::findOrFail($id);
         $task->delete();
 
-        return ok('Task Data Deleted Successfuly');
+        return ok('Task data deleted successfuly');
     }
 
      /**
@@ -132,7 +135,7 @@ class TaskController extends Controller
         $task = Task::onlyTrashed()->findOrFail($id);
         $task->forceDelete();
         
-        return ok('Task Data Permanent Deleted Successfuly');
+        return ok('Task data permanent deleted successfuly');
     }
 
     /**
@@ -146,6 +149,6 @@ class TaskController extends Controller
         $task = Task::onlyTrashed()->findOrFail($id);
         $task->restore();
         
-        return ok('Task Data Restore Successfuly');
+        return ok('Task data restore successfuly');
     }
 }

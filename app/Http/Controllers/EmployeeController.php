@@ -30,8 +30,8 @@ class EmployeeController extends Controller
         $data = $this->filterSearchPagination($query,$searchable_fields);
 
         return ok('Data',[
-            'Employee List' =>  $data['query']->get(),
-            'No Of Employee'=>  $data['count'],    
+            'employees' =>  $data['query']->get(),
+            'count'     =>  $data['count'],    
         ]);
     }
 
@@ -55,7 +55,7 @@ class EmployeeController extends Controller
         ]);
 
         $company = Company::where('id',$request->company_id)->first();
-        //dd($company);
+
         if(auth()->user()->id == $company->user_id)
         {
             $username = strtolower($request->first_name . $request->last_name[0]);
@@ -74,11 +74,11 @@ class EmployeeController extends Controller
                 'user_id'   =>  $user->id,
             ]);
            
-            return ok('Employee Data Added Successfully');
+            return ok('Employee data added successfully');
         }
 
 
-        return error('unauthenticated',type:'unauthenticated');
+        return error('unauthenticated',[],'unauthenticated');
        
     }
 
@@ -105,7 +105,7 @@ class EmployeeController extends Controller
         $employee = Employee::findOrFail($id); 
         $employee->update($request->only(['first_name' , 'last_name' ,'email' ,'phone' ,'joining_date' ,'company_id']));
 
-        return ok('Employee Data Updated Successfully');
+        return ok('Employee data updated successfully');
     }
 
     /**
@@ -116,9 +116,9 @@ class EmployeeController extends Controller
      */
     public function get($id)
     {
-        $employee = Employee::with('company','tasks')->withCount('tasks AS NO-OF-TASK')->findOrFail($id);
+        $employee = Employee::with('company','tasks')->withCount('tasks AS no_of_task')->findOrFail($id);
 
-        return ok('Employee Data',$employee);
+        return ok('Employee data',$employee);
     }
 
     /**
@@ -132,7 +132,7 @@ class EmployeeController extends Controller
         $employee = Employee::findOrFail($id);
         $employee->delete();
 
-        return ok('Employee Data Deleted Successfully');
+        return ok('Employee data deleted successfully');
     }
 
     /**
@@ -146,7 +146,7 @@ class EmployeeController extends Controller
         $employee = Employee::onlyTrashed()->findOrFail($id);
         $employee->forceDelete();
 
-        return ok('Employee Data Permanent Deleted Successfully');
+        return ok('Employee data permanent deleted successfully');
     }
 
      /**
@@ -160,21 +160,19 @@ class EmployeeController extends Controller
         $employee = Employee::onlyTrashed()->findOrFail($id);
         $employee->restore();
 
-        return ok('Employee Data Restore  Successfully');
+        return ok('Employee data restore successfully');
     }
 
     public function export(Request $request) 
     {
         return Excel::download(new ExportEmployee($request->start_date,$request->end_date), 'employee.csv');
-        // $data = (new ExportEmployee($request->start_date,$request->end_date))->download('employee.csv',Excel::CSV);
-         //return ($data);
-        // return (new InvoicesExport(2018))->download('invoices.xlsx');
-
     }
     
     public function import(Request $request)
     {
         Excel::import(new EmployeesImport,$request->file('file'));
+
+        return ok('Data imported successfully');
     }
 
 }

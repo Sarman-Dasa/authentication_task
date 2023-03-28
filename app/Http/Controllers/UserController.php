@@ -19,7 +19,7 @@ class UserController extends Controller
         $searchable_fields = ['name','email']; 
         $data = $this->filterSearchPagination($query,$searchable_fields);
 
-        return ok('User List',[
+        return ok('User list',[
             'users' =>  $data['query']->get(),
             'count' =>  $data['count'],
         ]);
@@ -27,9 +27,8 @@ class UserController extends Controller
 
     public function get($id)
     {
-        $id = $id ?? auth()->user();
         $user = User::findOrFail($id);
-        return ok('User Profile',$user);
+        return ok('User profile',$user);
     }
 
     public function logout()
@@ -51,6 +50,6 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
         
-        return ok('password Change Successfully');
+        return ok('Password changed successfully');
     }
 }

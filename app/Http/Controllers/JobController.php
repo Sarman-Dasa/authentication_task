@@ -24,14 +24,14 @@ class JobController extends Controller
         $searchable_fields = ['type'];
         $data = $this->filterSearchPagination($query,$searchable_fields);
 
-        return ok('Data',[
-            'Job List'  =>  $data['query']->get(),
-            'No Of Jobs'=>  $data['count'],
+        return ok('data',[
+            'jobs'  =>  $data['query']->get(),
+            'count' =>  $data['count'],
         ]);
     }
 
     /**
-     * Store a newly created joon in database.
+     * Store a newly created job in database.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -39,19 +39,19 @@ class JobController extends Controller
     public function create(Request $request)
     {
         $request->validate([
-            'type'      =>  'required|min:1|max:150|unique:jobs,type',
-            'vacancy'   =>  'required|numeric|min:1|max_digits:3',
-            'company_id'=>  'required|exists:companies,id',
+            'type'          =>  'required|min:1|max:150|unique:jobs,type',
+            'vacancy'       =>  'required|numeric|min:1|max_digits:3',
+            'company_id'    =>  'required|exists:companies,id',
         ]);
 
         $company = Company::where('id',$request->company_id)->first();
-        // dd($company);
+
         if(auth()->user()->id == $company->user_id){
             $job = Job::create($request->only(['type' ,'vacancy' ,'company_id']));
-            return ok('Job Data Added Successfully');
+            return ok('Job data added successfully');
         }
         
-        return ok('Company Does Not Exists');
+        return ok('Company does not exists');
     }
 
     /**
@@ -72,7 +72,7 @@ class JobController extends Controller
         $job = Job::findOrFail($id);
         $job->update($request->only(['type' ,'vacancy' ,'company_id']));
 
-        return ok('Job Data Updated Successfully');
+        return ok('Job data updated successfully');
     }
 
      /**
@@ -84,7 +84,7 @@ class JobController extends Controller
     public function get($id)
     {
         $job = Job::with('candidates','company')->findOrFail($id);
-        return ok('Job Data',$job);
+        return ok('Job data',$job);
     }
 
     /**
@@ -98,7 +98,7 @@ class JobController extends Controller
         $job = Job::findOrFail($id);
         $job->delete();
 
-        return ok('Job Data Deleted Successfully');
+        return ok('Job data deleted successfully');
     }
 
     /**
@@ -112,7 +112,7 @@ class JobController extends Controller
         $task = Job::onlyTrashed()->findOrFail($id);
         $task->forceDelete();
         
-        return ok('Job Data Permanent Deleted Successfuly');
+        return ok('Job data permanent deleted successfuly');
     }
 
     /**
@@ -126,7 +126,7 @@ class JobController extends Controller
         $task = job::onlyTrashed()->findOrFail($id);
         $task->restore();
         
-        return ok('Job Data Restore Successfuly');
+        return ok('Job data restore successfuly');
     }
 
 }

@@ -17,12 +17,12 @@ class CompanyController extends Controller
 
         $query = Company::query();
         $searchable_fields = ['name','email'];
-        $query->where('user_id','=',auth()->user()->id);
+        $query->where('user_id',auth()->user()->id);
         $data = $this->filterSearchPagination($query,$searchable_fields);
 
-        return ok('Company Data',[
-            'Company List'  =>  $data['query']->get(),
-            'count' =>  $data['count'],
+        return ok('Company data',[
+            'companies' =>  $data['query']->get(),
+            'count'     =>  $data['count'],
         ]);
     }
 
@@ -42,12 +42,14 @@ class CompanyController extends Controller
         $logoName = explode(" " ,$request->name)[0] . "." .$extenstion;
         $logo->move(public_path(). '/storage/logo/' ,$logoName);
         
+        $userId = auth()->user()->id;
         $company = Company::create($request->only(['name' ,'email' ,'website'])
         +[
-            'logo'  =>  '/storage/logo/'.$logoName,
+            'logo'      =>  '/storage/logo/'.$logoName,
+            'user_id'   =>  $userId,
         ]);
 
-        return ok("Company Data Added Successfully" ,$company);
+        return ok("Company data added successfully" ,$company);
     }
 
     public function update(Request $request,$id)
@@ -70,22 +72,21 @@ class CompanyController extends Controller
             $logo->move(public_path(). '/storage/logo/',$logoName);
             $logoPath = '/storage/logo/'.$logoName;
         }
-        $userId = auth()->user()->id;
+      
         $company->update($request->only(['name' ,'email' ,'website'])
         +[
             'logo'      =>  $logoPath,
-            'user_id'   =>  $userId,
         ]);
 
-        return ok('Company Data Updated Successfully');
+        return ok('Company data updated successfully');
     }
 
     public function get($id)
     {
 
-        $company = Company::with('employees','jobs','tasks')->withCount('employees AS NO-OF-EMPLOYEES')->findOrFail($id);
+        $company = Company::with('employees','jobs','tasks')->withCount('employees AS no_of_employees')->findOrFail($id);
         
-        return ok('Company Data',$company);
+        return ok('Company data',$company);
     }
 
     public function destroy($id)
@@ -93,8 +94,7 @@ class CompanyController extends Controller
 
         $company = Company::findOrFail($id);
         $company->delete();
-
-        return ok('Company Data Deleted Successfully');
+        return ok('Company data deleted successfully');
 
     }
 
@@ -102,8 +102,8 @@ class CompanyController extends Controller
     {
         $company = Company::onlyTrashed()->findOrFail($id);
         $company->forceDelete();
-
-        return ok('Company Data Permanent Deleted Successfully');
+        unlink(public_path().$company->logo);
+        return ok('Company data permanent deleted successfully');
     }
 
     public function restoreDeletedCompany($id)
@@ -111,6 +111,6 @@ class CompanyController extends Controller
         $company = Company::onlyTrashed()->findOrFail($id);
         $company->restore();
 
-        return ok('Company Data Restore Successfully');
+        return ok('Company data restore successfully');
     }
 }
